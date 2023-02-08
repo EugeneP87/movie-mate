@@ -21,7 +21,7 @@ public class UserValidation {
             log.debug(message);
             throw new ValidationException(message);
         }
-        if (user.getName() == null) {
+        if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
