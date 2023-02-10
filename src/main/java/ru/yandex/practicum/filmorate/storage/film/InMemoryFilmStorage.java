@@ -1,25 +1,26 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.validation.FilmValidation;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
-    FilmValidation filmValidation = new FilmValidation();
     private final Map<Integer, Film> films = new HashMap<>();
-    Set<Integer> likes = new HashSet<>();
     private int filmId = 1;
 
     @Override
     public Film create(Film film) {
-        filmValidation.checkFilmCreation(film);
+        checkFilmCreation(film);
         film.setId(filmId);
         films.put(filmId, film);
         filmId++;
@@ -51,39 +52,29 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    @Override
-    public void addLike(int id, int userId) {
-        Film film = films.get(id);
-        if (film != null) {
-            likes.add(userId);
-            film.setLikes(likes);
-        } else {
-            throw new NotFoundException("Фильм для добавления лайка не найден");
+    private void checkFilmCreation(Film film) {
+        String message;
+        if (film.getName().isEmpty()) {
+            message = "Название фильма не может быть пустым";
+            log.debug(message);
+            throw new ValidationException(message);
         }
-    }
-
-    @Override
-    public void deleteLike(int id, int userId) {
-        Film film = films.get(id);
-        if (film != null) {
-            if (likes.contains(userId)) {
-                likes.remove(userId);
-                film.setLikes(likes);
-            } else {
-                throw new NotFoundException("Лайк пользователя не найден");
-            }
-        } else {
-            throw new NotFoundException("Фильм для удаления лайка не найден");
+        int maxDescriptionLength = 200;
+        if (film.getDescription().length() > maxDescriptionLength) {
+            message = "Максимальная длина описания — 200 символов";
+            log.debug(message);
+            throw new ValidationException(message);
         }
-    }
-
-    @Override
-    public Collection<Film> getPopularFilms(int count) {
-        List<Film> filmsList = new ArrayList<>(films.values());
-        if (count > 0) {
-            return filmsList.stream().filter(film -> film.getLikes() != null).collect(Collectors.toList());
-        } else {
-            return filmsList;
+        LocalDate minReleaseDate = LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(minReleaseDate)) {
+            message = "Дата релиза — не раньше 28 декабря 1895 года";
+            log.debug(message);
+            throw new ValidationException(message);
+        }
+        if (film.getDuration() <= 0) {
+            message = "Продолжительность фильма должна быть положительной";
+            log.debug(message);
+            throw new ValidationException(message);
         }
     }
 

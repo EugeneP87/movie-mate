@@ -1,23 +1,26 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validation.UserValidation;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
-import java.util.*;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class InMemoryUserStorage implements UserStorage {
 
-    UserValidation userValidation = new UserValidation();
     public final Map<Integer, User> users = new HashMap<>();
     private int userId = 1;
 
     @Override
     public User create(User user) {
-        userValidation.checkUserCreation(user);
+        checkUserCreation(user);
         user.setId(userId);
         users.put(userId, user);
         userId++;
@@ -40,84 +43,34 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Set<Integer> addFriend(int id, int friendId) {
-        User user = users.get(id);
-        User friend = users.get(friendId);
-        if (user != null && friend != null) {
-            Set<Integer> userFriends = user.getFriends();
-            Set<Integer> friendFriends = friend.getFriends();
-            userFriends.add(friendId);
-            friendFriends.add(id);
-            return new HashSet<>(userFriends);
-        } else {
-            throw new NotFoundException("Пользователь для добавления друга не найден");
-        }
-    }
-
-    @Override
-    public Set<Integer> removeFriend(int id, int friendId) {
-        Set<Integer> userFriends = users.get(id).getFriends();
-        Set<Integer> friendFriends = users.get(friendId).getFriends();
-        if (userFriends != null && friendFriends != null) {
-            userFriends.remove(friendId);
-            friendFriends.remove(id);
-            return new HashSet<>(userFriends);
-        } else {
-            throw new NotFoundException("Не нашел пользователя для удаления из друзей");
-        }
-    }
-
-    @Override
-    public List<User> getFriendsByUserId(int id) {
-        User user = users.get(id);
-        if (user != null) {
-            Set<Integer> userFriends = user.getFriends();
-            if (userFriends != null) {
-                List<User> newList = new ArrayList<>();
-                for (int i : userFriends) {
-                    newList.add(users.get(i));
-                }
-                return newList;
-            } else {
-                throw new NotFoundException("Список друзей пуст");
-            }
-        } else {
-            throw new NotFoundException("Пользователь не найден");
-        }
-    }
-
-    @Override
-    public List<User> findCommonFriends(int id, int otherId) {
-        User user = users.get(id);
-        User friend = users.get(otherId);
-        if (user != null && friend != null) {
-            Set<Integer> userFriends = user.getFriends();
-            Set<Integer> friendFriends = friend.getFriends();
-            if (userFriends != null && friendFriends != null) {
-                List<User> newList = new ArrayList<>();
-                for (Integer abc : userFriends) {
-                    for (Integer efg : friendFriends) {
-                        if (abc.equals(efg)) {
-                            newList.add(users.get(abc));
-                        }
-                    }
-                }
-                return newList;
-            } else {
-                throw new NotFoundException("Список друзей пуст");
-            }
-        } else {
-            throw new NotFoundException("Пользователь не найден");
-        }
-    }
-
-    @Override
     public User getUserById(int id) {
         User user = users.get(id);
         if (user != null) {
             return user;
         } else {
             throw new NotFoundException("Пользователь для отображения не найден");
+        }
+    }
+
+    private void checkUserCreation(User user) {
+        String message;
+        if (user.getLogin().isBlank()) {
+            message = "Логин не может быть пустым и содержать пробелы";
+            log.debug(message);
+            throw new ValidationException(message);
+        }
+        if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            message = "Электронная почта не может быть пустой и должна содержать символ @";
+            log.debug(message);
+            throw new ValidationException(message);
+        }
+        if (user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            message = "Дата рождения не может быть в будущем";
+            log.debug(message);
+            throw new ValidationException(message);
         }
     }
 

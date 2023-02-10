@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.validation.ValidationException;
 import java.time.LocalDate;
 
 class UserControllerTest {
-
-    /*UserController userController = new UserController(new UserService(new InMemoryUserStorage()));
+/*
+    UserController userController = new UserController(new UserService(new InMemoryUserStorage()));
 
     @Test()
     void checkUserEmail() {
@@ -61,6 +61,5 @@ class UserControllerTest {
                         .birthday(LocalDate.now().plusDays(1))
                         .build())
         );
-    }
-*/
+    }*/
 }
