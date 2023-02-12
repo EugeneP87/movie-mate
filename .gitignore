@@ -44,3 +44,9 @@ build/
 
 *.db
 db/*
+/mvnw.cmd
+/src/test/java/ru/yandex/practicum/filmorate/FilmorateApplicationTests.java
+/HELP.md
+/.mvn/wrapper/maven-wrapper.jar
+/.mvn/wrapper/maven-wrapper.properties
+/mvnw
