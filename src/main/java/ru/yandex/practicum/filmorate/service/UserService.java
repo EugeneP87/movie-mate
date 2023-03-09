@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -12,14 +13,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserDbStorage userDbStorage;
-
-    @Autowired
-    public UserService(UserDbStorage userDbStorage) {
-        this.userDbStorage = userDbStorage;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
     public User create(User user) {
         return userDbStorage.create(user);
@@ -30,7 +28,7 @@ public class UserService {
     }
 
     public Collection<User> findAll() {
-        return userDbStorage.findAll();
+        return jdbcTemplate.query("SELECT * FROM users", this::mapRowToUser);
     }
 
     public void addFriend(int id, int friendId) {
@@ -38,9 +36,7 @@ public class UserService {
         User friend = getUserById(friendId);
         if (user != null && friend != null) {
             String sqlQuery = "INSERT INTO friends(user_id, friend_id) VALUES (?, ?)";
-            userDbStorage.jdbcTemplate.update(sqlQuery,
-                    user.getId(),
-                    friend.getId());
+            jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
         } else {
             throw new NotFoundException("Пользователь для добавления друга не найден");
         }
@@ -51,9 +47,7 @@ public class UserService {
         User friend = getUserById(friendId);
         if (user != null && friend != null) {
             String sqlQuery = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-            userDbStorage.jdbcTemplate.update(sqlQuery,
-                    user.getId(),
-                    friend.getId());
+            jdbcTemplate.update(sqlQuery, user.getId(), friend.getId());
         } else {
             throw new NotFoundException("Не нашел пользователя для удаления из друзей");
         }
@@ -62,7 +56,7 @@ public class UserService {
     public Collection<User> getFriendsByUserId(int id) {
         User user = getUserById(id);
         if (user != null) {
-            return userDbStorage.jdbcTemplate.query("SELECT * FROM users WHERE id " +
+            return jdbcTemplate.query("SELECT * FROM users WHERE id " +
                     "IN (SELECT friend_id FROM friends WHERE user_id = ?)", this::mapRowToUser, id);
         } else {
             throw new NotFoundException("Пользователь не найден");
@@ -75,7 +69,7 @@ public class UserService {
         if (user != null && friend != null) {
             String sqlQuery = "SELECT * FROM users WHERE id IN (SELECT f1.friend_id FROM friends AS f1 " +
                     "INNER JOIN friends AS f2 ON f1.friend_id = f2.friend_id AND f1.user_id = ? WHERE f2.user_id = ?)";
-            return userDbStorage.jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
+            return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, otherId);
         } else {
             throw new NotFoundException("Список друзей пуст или пользователь не найден");
         }

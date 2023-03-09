@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -13,22 +13,15 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.Objects;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
     public final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     @Override
     public User create(User user) {
@@ -51,8 +44,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         if (getUserById(user.getId()) != null) {
-            String sqlQuery = "UPDATE users SET " +
-                    "email = ?, login = ?, user_name = ?, birthday = ?" +
+            String sqlQuery = "UPDATE users SET email = ?, login = ?, user_name = ?, birthday = ?" +
                     "WHERE id = ?";
             jdbcTemplate.update(sqlQuery,
                     user.getEmail(),
@@ -64,11 +56,6 @@ public class UserDbStorage implements UserStorage {
         } else {
             throw new NotFoundException("Пользователь для обновления данных не найден");
         }
-    }
-
-    @Override
-    public Collection<User> findAll() {
-        return jdbcTemplate.query("SELECT * FROM users", this::mapRowToUser);
     }
 
     @Override
@@ -85,16 +72,6 @@ public class UserDbStorage implements UserStorage {
         } else {
             throw new NotFoundException("Пользователь не найден");
         }
-    }
-
-    private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
-        return User.builder()
-                .id(resultSet.getInt("id"))
-                .email(resultSet.getString("email"))
-                .login(resultSet.getString("login"))
-                .name(resultSet.getString("user_name"))
-                .birthday(resultSet.getDate("birthday").toLocalDate())
-                .build();
     }
 
     public void checkUserCreation(User user) {
