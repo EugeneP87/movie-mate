@@ -1,14 +1,18 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     private int id; // целочисленный идентификатор
@@ -19,6 +23,5 @@ public class User {
     private String login; // логин пользователя
     private String name; // имя для отображения
     private LocalDate birthday; // дата рождения
-    private Set<Integer> friends = new HashSet<>(); // список друзей
 
 }
