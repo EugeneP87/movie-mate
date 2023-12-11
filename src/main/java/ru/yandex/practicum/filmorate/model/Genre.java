@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Genre {
 
-    private int id;  // целочисленный идентификатор
-    private String name; // название
+    private int id;
+    private String name;
 
 }

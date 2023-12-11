@@ -15,13 +15,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class User {
 
-    private int id; // целочисленный идентификатор
+    private int id;
     @NotBlank
     @Email
-    private String email; // электронная почта
+    private String email;
     @NotBlank
-    private String login; // логин пользователя
-    private String name; // имя для отображения
-    private LocalDate birthday; // дата рождения
+    private String login;
+    private String name;
+    private LocalDate birthday;
 
 }

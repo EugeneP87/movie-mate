@@ -14,13 +14,13 @@ import java.util.List;
 @NoArgsConstructor
 public class Film {
 
-    private int id;  // целочисленный идентификатор
-    private String name; // название
-    private String description; // описание
-    private LocalDate releaseDate; // дата релиза
-    private int duration; // продолжительность фильма
-    private Mpa mpa; // рейтинг фильма по MPA
-    private List<Genre> genres; // перечень жанров фильма
+    private int id;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
+    private int duration;
+    private Mpa mpa;
+    private List<Genre> genres;
 
 }
 
